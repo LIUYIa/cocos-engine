@@ -179,6 +179,12 @@ const ccstd::unordered_map<gfx::Type, GFXTypeWriterCallback> type2writer = {
              a[idx] = vec3.x;
              a[idx + 1] = vec3.y;
              a[idx + 2] = 0;
+         } else if (ccstd::holds_alternative<Color>(v)) {
+             const auto &color = ccstd::get<Color>(v);
+             Vec4 colorFloat{color.toVec4()};
+             a[idx] = colorFloat.x;
+             a[idx + 1] = colorFloat.y;
+             a[idx + 2] = colorFloat.z;
          } else {
              CC_ASSERT(false);
          }
@@ -260,6 +266,27 @@ const ccstd::string &getDefaultStringFromType(gfx::Type type) {
             return DEFAULT_CUBE_TEXTURE_STR;
         default:
             return DEFAULT_TEXTURE_STR;
+    }
+}
+
+const ccstd::string &getStringFromType(gfx::Type type) {
+    static const ccstd::string TEXTURE_2D_STR{"-texture"};
+    static const ccstd::string TEXTURE_CUBE_STR{"-cube-texture"};
+    static const ccstd::string TEXTURE_2D_ARRAY_STR{"-array-texture"};
+    static const ccstd::string TEXTURE_3D_STR{"-3d-texture"};
+    static const ccstd::string UNKNOWN_STR{"-unknown"};
+
+    switch (type) {
+        case gfx::Type::SAMPLER2D:
+            return TEXTURE_2D_STR;
+        case gfx::Type::SAMPLER_CUBE:
+            return TEXTURE_CUBE_STR;
+        case gfx::Type::SAMPLER2D_ARRAY:
+            return TEXTURE_2D_ARRAY_STR;
+        case gfx::Type::SAMPLER3D:
+            return TEXTURE_3D_STR;
+        default:
+            return UNKNOWN_STR;
     }
 }
 
