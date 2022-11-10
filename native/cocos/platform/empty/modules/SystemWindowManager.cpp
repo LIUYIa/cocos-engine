@@ -1,5 +1,5 @@
 /****************************************************************************
- Copyright (c) 2019-2022 Xiamen Yaji Software Co., Ltd.
+ Copyright (c) 2021 Xiamen Yaji Software Co., Ltd.
 
  http://www.cocos.com
 
@@ -21,40 +21,49 @@
  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
-****************************************************************************/
+ ****************************************************************************/
 
-#pragma once
-
-#include "GLES3Std.h"
-#include "gfx-base/GFXTexture.h"
+#include "SystemWindowManager.h"
+#include "platform/BasePlatform.h"
+#include "platform/interfaces/modules/ISystemWindowManager.h"
+#include "platform/empty/modules/SystemWindow.h"
 
 namespace cc {
-namespace gfx {
 
-struct GLES3GPUTexture;
-struct GLES3GPUTextureView;
-class CC_GLES3_API GLES3Texture final : public Texture {
-public:
-    GLES3Texture();
-    ~GLES3Texture() override;
+int SystemWindowManager::init() {
+    return 0;
+}
 
-    inline GLES3GPUTexture *gpuTexture() const { return _gpuTexture; }
-    inline GLES3GPUTextureView *gpuTextureView() const { return _gpuTextureView; }
+void SystemWindowManager::processEvent(bool* quit) {
 
-    uint32_t getGLTextureHandle() const noexcept override;
+}
 
-protected:
-    void doInit(const TextureInfo &info) override;
-    void doInit(const TextureViewInfo &info) override;
-    void doDestroy() override;
-    void doResize(uint32_t width, uint32_t height, uint32_t size) override;
-    void doInit(const SwapchainTextureInfo &info) override;
+void SystemWindowManager::swapWindows() {
 
-    void createTextureView();
+}
 
-    GLES3GPUTexture *_gpuTexture = nullptr;
-    GLES3GPUTextureView *_gpuTextureView = nullptr;
-};
+ISystemWindow *SystemWindowManager::getWindow(uint32_t windowId) const {
+    if (windowId == 0) {
+        return nullptr;
+    }
 
-} // namespace gfx
+    auto iter = _windows.find(windowId);
+    if (iter != _windows.end()) {
+        return iter->second.get();
+    }
+    return nullptr;
+}
+
+ISystemWindow *SystemWindowManager::createWindow(const cc::ISystemWindowInfo &info) {
+    ISystemWindow *window = BasePlatform::getPlatform()->createNativeWindow(_nextWindowId, info.externalHandle);
+    if (window) {
+        if (!info.externalHandle) {
+            window->createWindow(info.title.c_str(), info.x, info.y, info.width, info.height, info.flags);
+        }
+        _windows[_nextWindowId] = std::shared_ptr<ISystemWindow>(window);
+        _nextWindowId++;
+    }
+    return window;
+}
+
 } // namespace cc
